@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Suraasa — Manager Incentive Calculator</title>
+<title>Manager Incentive Calculator — Suraasa</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -17,15 +17,30 @@
   .container { max-width: 860px; margin: 0 auto; padding: 24px 16px 64px; }
 
   header {
-    text-align: center; padding: 32px 0 8px;
+    text-align: center; padding: 24px 0 16px;
+    border-bottom: 1px solid #27272a; margin-bottom: 24px;
   }
-  header h1 { font-size: 1.65rem; font-weight: 700; letter-spacing: -0.02em; }
+  header h1 { font-size: 1.35rem; font-weight: 700; }
   header h1 span { color: #2563eb; }
-  header .subtitle { color: #a1a1aa; font-size: 0.9rem; margin-top: 4px; }
 
+  /* Tabs */
+  .tabs {
+    display: flex; gap: 0; margin-bottom: 28px; border-bottom: 1px solid #3f3f46;
+  }
+  .tab-btn {
+    padding: 12px 24px; font-size: 0.92rem; font-weight: 600; color: #71717a;
+    background: none; border: none; border-bottom: 2px solid transparent;
+    cursor: pointer; transition: color 0.15s, border-color 0.15s;
+  }
+  .tab-btn:hover { color: #a1a1aa; }
+  .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* Card */
   .card {
     background: #27272a; border: 1px solid #3f3f46; border-radius: 12px;
-    padding: 24px; margin-top: 24px;
+    padding: 24px; margin-bottom: 24px;
   }
   .card h2 {
     font-size: 1.15rem; font-weight: 600; margin-bottom: 18px;
@@ -57,8 +72,6 @@
   .result-row .label { color: #a1a1aa; }
   .result-row .value { font-weight: 600; font-variant-numeric: tabular-nums; }
   .result-row.highlight .label { color: #f4f4f5; font-weight: 600; }
-  .result-row.sub { padding-left: 12px; font-size: 0.85rem; }
-  .result-row.sub .label { color: #71717a; }
   .result-row.penalty .value { color: #ef4444; }
   .result-row.bonus .value { color: #22c55e; }
   .result-row.kicker .value { color: #eab308; }
@@ -71,46 +84,42 @@
   .final-positive { color: #22c55e !important; }
   .final-zero { color: #ef4444 !important; }
 
-  .slab-tag {
-    display: inline-block; background: #2563eb22; color: #60a5fa;
-    padding: 2px 8px; border-radius: 4px; font-size: 0.78rem; font-weight: 600;
-    margin-left: 8px;
+  /* Plan & Policy details */
+  .plan-section { margin-bottom: 36px; }
+  .plan-section h2 {
+    font-size: 1.2rem; font-weight: 700; margin-bottom: 20px; padding-bottom: 8px;
+    border-bottom: 2px solid #2563eb; display: inline-block;
   }
-
-  /* Plan details */
-  .plan-section { margin-top: 16px; }
   .plan-section h3 {
-    font-size: 1rem; font-weight: 600; margin: 20px 0 10px;
-    color: #e4e4e7;
+    font-size: 1rem; font-weight: 600; margin: 20px 0 10px; color: #e4e4e7;
   }
   .plan-section p, .plan-section li {
-    font-size: 0.88rem; color: #a1a1aa; line-height: 1.7;
+    font-size: 0.9rem; color: #a1a1aa; line-height: 1.7;
   }
-  .plan-section ul { padding-left: 20px; margin: 6px 0; }
-  .plan-section li { margin: 4px 0; }
+  .plan-section ul { padding-left: 20px; margin-bottom: 12px; }
+  .plan-section li { margin-bottom: 4px; }
 
-  table.plan-table {
-    width: 100%; border-collapse: collapse; font-size: 0.88rem;
-    margin: 8px 0 16px;
+  table {
+    width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.88rem;
   }
-  table.plan-table th {
-    text-align: left; padding: 8px 12px; background: #18181b;
-    color: #a1a1aa; font-weight: 600; border-bottom: 1px solid #3f3f46;
-  }
-  table.plan-table td {
-    padding: 8px 12px; border-bottom: 1px solid #3f3f4640; color: #d4d4d8;
-  }
-  table.plan-table tr:last-child td { border-bottom: none; }
+  th, td { padding: 10px 14px; text-align: left; border: 1px solid #3f3f46; }
+  th { background: #27272a; color: #e4e4e7; font-weight: 600; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.03em; }
+  td { color: #d4d4d8; }
+  tr:nth-child(even) td { background: #1f1f23; }
 
   .formula-box {
-    background: #18181b; border: 1px solid #3f3f46; border-radius: 8px;
-    padding: 16px; font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-    font-size: 0.82rem; color: #a1a1aa; line-height: 1.9;
-    overflow-x: auto; margin: 8px 0;
+    background: #27272a; border-left: 3px solid #2563eb; border-radius: 6px;
+    padding: 16px 20px; margin: 16px 0; font-size: 0.88rem; color: #d4d4d8; line-height: 1.8;
   }
-  .formula-box .kw { color: #60a5fa; }
-  .formula-box .op { color: #22c55e; }
-  .formula-box .warn { color: #ef4444; }
+  .formula-box code { color: #60a5fa; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem; }
+
+  .policy-callout {
+    background: #1e293b; border: 1px solid #2563eb40; border-radius: 10px;
+    padding: 20px 24px; margin-bottom: 24px;
+  }
+  .policy-callout h3 { color: #60a5fa; margin-bottom: 10px; font-size: 1.05rem; }
+  .policy-callout p { color: #94a3b8; font-size: 0.9rem; line-height: 1.7; margin-bottom: 10px; }
+  .policy-callout p:last-child { margin-bottom: 0; }
 </style>
 </head>
 <body>
@@ -120,58 +129,64 @@
     <h1><span>Suraasa</span> — Manager Incentive Calculator</h1>
   </header>
 
-  <!-- CALCULATOR -->
-  <div class="card">
-    <h2>Calculator</h2>
-    <div class="form-grid">
-      <div class="field">
-        <label>Aggregate Monthly Target (Rs)</label>
-        <input type="number" id="target" value="15000000" min="0">
-      </div>
-      <div class="field">
-        <label>Aggregate Revenue Achieved (Rs)</label>
-        <input type="number" id="revenue" value="0" min="0">
-      </div>
-      <div class="field">
-        <label>Input Metrics Met</label>
-        <select id="inputMetrics">
-          <option value="3">All 3 met</option>
-          <option value="2">2 of 3 met</option>
-          <option value="0">1 or none met</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Total Missed Connects (all teams)</label>
-        <input type="number" id="missedConnects" value="0" min="0">
-      </div>
-      <div class="field">
-        <label>Total Team Leads</label>
-        <input type="number" id="totalTLs" value="3" min="1">
-      </div>
-      <div class="field">
-        <label>Team Leads Missing Target</label>
-        <input type="number" id="tlsMissing" value="0" min="0">
-      </div>
-      <div class="field">
-        <label>Total Closers (all teams)</label>
-        <input type="number" id="totalClosers" value="15" min="1">
-      </div>
-      <div class="field">
-        <label>Closers Missing Individual Target</label>
-        <input type="number" id="closersMissing" value="0" min="0">
-      </div>
-    </div>
-
-    <div class="results" id="results"></div>
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('calculator')">Calculator</button>
+    <button class="tab-btn" onclick="switchTab('policy')">Incentive Policy</button>
   </div>
 
-  <!-- PLAN DETAILS -->
-  <div class="card">
-    <h2>Full Incentive Plan Details</h2>
-    <div class="plan-section">
+  <!-- ======================== TAB 1: CALCULATOR ======================== -->
+  <div id="tab-calculator" class="tab-content active">
+    <div class="card">
+      <h2>Calculator</h2>
+      <div class="form-grid">
+        <div class="field">
+          <label>Aggregate Monthly Target (Rs)</label>
+          <input type="number" id="target" value="15000000" min="0">
+        </div>
+        <div class="field">
+          <label>Aggregate Revenue Achieved (Rs)</label>
+          <input type="number" id="revenue" value="0" min="0">
+        </div>
+        <div class="field">
+          <label>Input Metrics Met</label>
+          <select id="inputMetrics">
+            <option value="3">All 3 met</option>
+            <option value="2">2 of 3 met</option>
+            <option value="0">1 or none met</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Total Missed Connects (all teams)</label>
+          <input type="number" id="missedConnects" value="0" min="0">
+        </div>
+        <div class="field">
+          <label>Total Team Leads</label>
+          <input type="number" id="totalTLs" value="3" min="1">
+        </div>
+        <div class="field">
+          <label>Team Leads Missing Target</label>
+          <input type="number" id="tlsMissing" value="0" min="0">
+        </div>
+        <div class="field">
+          <label>Total Closers (all teams)</label>
+          <input type="number" id="totalClosers" value="15" min="1">
+        </div>
+        <div class="field">
+          <label>Closers Missing Individual Target</label>
+          <input type="number" id="closersMissing" value="0" min="0">
+        </div>
+      </div>
 
-      <h3>Base Incentive Slabs</h3>
-      <table class="plan-table">
+      <div class="results" id="results"></div>
+    </div>
+
+    <!-- How it's calculated -->
+    <div class="plan-section">
+      <h2>How It&rsquo;s Calculated</h2>
+
+      <h3>1. Base Incentive Slabs</h3>
+      <table>
         <thead><tr><th>Achievement Slab</th><th>Incentive Rate (% of Revenue Achieved)</th></tr></thead>
         <tbody>
           <tr><td>Below 70%</td><td>0%</td></tr>
@@ -182,8 +197,8 @@
         </tbody>
       </table>
 
-      <h3>Input Criteria (Aggregate across all teams)</h3>
-      <table class="plan-table">
+      <h3>2. Input Criteria (Aggregate across all teams)</h3>
+      <table>
         <thead><tr><th>Metrics Met</th><th>Bonus</th></tr></thead>
         <tbody>
           <tr><td>All 3 met</td><td>+20% of base incentive</td></tr>
@@ -192,28 +207,28 @@
         </tbody>
       </table>
 
-      <h3>Overachievement Kicker</h3>
+      <h3>3. Overachievement Kicker</h3>
       <ul>
         <li>Only triggers when revenue exceeds <strong>120%</strong> of the aggregate monthly target.</li>
         <li>Rate: <strong>0.75%</strong> of revenue beyond the 120% threshold.</li>
         <li>Uncapped &mdash; the more you exceed, the more you earn.</li>
       </ul>
 
-      <h3>Penalty A &mdash; Missed 16-hour Connect SLA</h3>
-      <p>Applied as a percentage deduction from the base incentive:</p>
-      <table class="plan-table">
-        <thead><tr><th>Missed Connects</th><th>Deduction</th></tr></thead>
+      <h3>4. Penalties</h3>
+
+      <p><strong>Penalty A &mdash; Missed 16-hour Connect SLA</strong></p>
+      <table>
+        <thead><tr><th>Missed Connects</th><th>Deduction (% of Base Incentive)</th></tr></thead>
         <tbody>
           <tr><td>0 &ndash; 5</td><td>0%</td></tr>
-          <tr><td>6 &ndash; 15</td><td>&minus;5% of base</td></tr>
-          <tr><td>16 &ndash; 25</td><td>&minus;10% of base</td></tr>
-          <tr><td>26+</td><td>&minus;15% of base</td></tr>
+          <tr><td>6 &ndash; 15</td><td>-5%</td></tr>
+          <tr><td>16 &ndash; 25</td><td>-10%</td></tr>
+          <tr><td>26+</td><td>-15%</td></tr>
         </tbody>
       </table>
 
-      <h3>Penalty B &mdash; Revenue Shortfall</h3>
-      <p>Only applies when revenue is <strong>below 100%</strong> of target:</p>
-      <table class="plan-table">
+      <p><strong>Penalty B &mdash; Revenue Shortfall (only if below 100% target)</strong></p>
+      <table>
         <thead><tr><th>Shortfall %</th><th>Penalty</th></tr></thead>
         <tbody>
           <tr><td>1% &ndash; 10%</td><td>50% &times; shortfall amount &times; slab rate</td></tr>
@@ -222,51 +237,147 @@
         </tbody>
       </table>
 
-      <h3>Penalty C &mdash; Team Lead Performance Failure</h3>
-      <p>Applied as a percentage of (base + input + kicker &minus; penalty A &minus; penalty B):</p>
-      <table class="plan-table">
-        <thead><tr><th>Condition</th><th>Deduction</th></tr></thead>
+      <p><strong>Penalty C &mdash; Team Lead Performance Failure</strong></p>
+      <table>
+        <thead><tr><th>Condition</th><th>Deduction (% of subtotal)</th></tr></thead>
         <tbody>
-          <tr><td>All TLs miss their target</td><td>&minus;25%</td></tr>
-          <tr><td>All-but-one TLs miss</td><td>&minus;10%</td></tr>
+          <tr><td>All TLs miss their target</td><td>-25%</td></tr>
+          <tr><td>All-but-one TLs miss</td><td>-10%</td></tr>
           <tr><td>Half or fewer miss</td><td>0%</td></tr>
         </tbody>
       </table>
 
-      <h3>Penalty D &mdash; Systemic Closer Failure</h3>
-      <p>Applied as a percentage of the result after Penalty C:</p>
-      <table class="plan-table">
-        <thead><tr><th>% of Closers Missing Target</th><th>Deduction</th></tr></thead>
+      <p><strong>Penalty D &mdash; Systemic Closer Failure</strong></p>
+      <table>
+        <thead><tr><th>% of Closers Missing Target</th><th>Deduction (% after Penalty C)</th></tr></thead>
         <tbody>
-          <tr><td>&gt;80%</td><td>&minus;15%</td></tr>
-          <tr><td>61% &ndash; 80%</td><td>&minus;10%</td></tr>
-          <tr><td>41% &ndash; 60%</td><td>&minus;5%</td></tr>
+          <tr><td>&gt;80%</td><td>-15%</td></tr>
+          <tr><td>61% &ndash; 80%</td><td>-10%</td></tr>
+          <tr><td>41% &ndash; 60%</td><td>-5%</td></tr>
           <tr><td>&le;40%</td><td>0%</td></tr>
         </tbody>
       </table>
 
-      <h3>Calculation Flow</h3>
+      <h3>5. Calculation Flow</h3>
       <div class="formula-box">
-        <span class="kw">Step 1:</span> Base Incentive = revenue &times; slab rate<br>
-        <span class="kw">Step 2:</span> Input Bonus = base &times; (20% | 10% | 0%)<br>
-        <span class="kw">Step 3:</span> Kicker = (revenue &minus; target &times; 1.2) &times; 0.75% <em>(only if &gt;120%)</em><br>
-        <span class="kw">Step 4:</span> <span class="warn">Penalty A</span> = base &times; missed-connect rate<br>
-        <span class="kw">Step 5:</span> <span class="warn">Penalty B</span> = shortfall-multiplier &times; shortfall &times; slab rate<br>
-        <span class="kw">Step 6:</span> Subtotal = base <span class="op">+</span> input <span class="op">+</span> kicker <span class="warn">&minus;</span> penA <span class="warn">&minus;</span> penB<br>
-        <span class="kw">Step 7:</span> <span class="warn">Penalty C</span> = subtotal &times; TL-failure rate<br>
-        <span class="kw">Step 8:</span> <span class="warn">Penalty D</span> = (subtotal &minus; penC) &times; closer-failure rate<br>
-        <span class="kw">Final:</span>&nbsp; <strong>Max(0, subtotal &minus; penC &minus; penD)</strong>
+        <strong>Step 1:</strong> <code>Base Incentive = Revenue &times; Slab Rate</code><br>
+        <strong>Step 2:</strong> <code>Input Bonus = Base &times; (20% | 10% | 0%)</code><br>
+        <strong>Step 3:</strong> <code>Kicker = (Revenue &minus; Target &times; 1.2) &times; 0.75%</code> (only if &gt;120%)<br>
+        <strong>Step 4:</strong> <code>Penalty A = Base &times; Missed-Connect Rate</code><br>
+        <strong>Step 5:</strong> <code>Penalty B = Shortfall Multiplier &times; Shortfall &times; Slab Rate</code><br>
+        <strong>Step 6:</strong> <code>Subtotal = Base + Input + Kicker &minus; PenA &minus; PenB</code><br>
+        <strong>Step 7:</strong> <code>Penalty C = Subtotal &times; TL-Failure Rate</code><br>
+        <strong>Step 8:</strong> <code>Penalty D = (Subtotal &minus; PenC) &times; Closer-Failure Rate</code><br>
+        <strong>Final:</strong> <code>Payout = Max(0, Subtotal &minus; PenC &minus; PenD)</code>
       </div>
     </div>
   </div>
+
+  <!-- ======================== TAB 2: POLICY ======================== -->
+  <div id="tab-policy" class="tab-content">
+    <div class="plan-section">
+      <h2>Incentive Policy Document</h2>
+
+      <div class="policy-callout">
+        <h3>Why This Policy?</h3>
+        <p>A Manager&rsquo;s job is to build and sustain a high-performing sales organization &mdash; not to close deals or even manage individual SDRs directly. This incentive plan is designed to reward Managers for the outcomes that only they can influence: aggregate revenue performance, operational consistency across multiple teams, and the development of Team Leads who can independently deliver results.</p>
+        <p>The plan combines output incentives (revenue slabs), input monitoring (SDR activity at aggregate level), an overachievement kicker (exclusive to the Manager role), and a layered penalty system that holds Managers accountable for both Team Lead performance and systemic closer health.</p>
+        <p>The kicker exists at the Manager level because Managers are the ones who set stretch targets, allocate resources across teams, and create the conditions for overachievement. When the entire organization exceeds 120% of target, the Manager has earned the right to participate in that upside without a cap.</p>
+      </div>
+
+      <h3>1. Philosophy: Aggregate Outcomes + Leadership Accountability</h3>
+      <p>Unlike Team Leads who are measured on a single team, Managers are measured on the <strong>aggregate performance of all teams</strong>. This means:</p>
+      <ul>
+        <li>One underperforming team can be offset by a strong team &mdash; but only up to a point.</li>
+        <li>If most Team Leads are missing their targets, the Manager is penalized regardless of aggregate numbers. This prevents the scenario where one star TL masks systemic leadership failure.</li>
+        <li>If most closers across all teams are missing targets, that&rsquo;s an organizational problem the Manager owns.</li>
+      </ul>
+
+      <h3>2. Why Lower Base Rates Than Team Leads?</h3>
+      <p>Manager base rates (0.5% &ndash; 1.25%) are lower than TL rates (0.75% &ndash; 2.0%) because the Manager&rsquo;s <strong>revenue base is much larger</strong>. A Manager overseeing 3 teams with a Rs 1.5Cr aggregate target earns on the full Rs 1.5Cr &mdash; 3x the revenue base of any single TL. The lower rate on a larger base produces comparable or higher absolute payouts.</p>
+
+      <h3>3. Why the 120%+ Kicker?</h3>
+      <p>The overachievement kicker is exclusive to Managers because:</p>
+      <ul>
+        <li><strong>Managers set the ceiling.</strong> They decide hiring plans, lead allocation, training investments, and team composition. When the whole org overperforms, the Manager created those conditions.</li>
+        <li><strong>The 120% threshold is intentionally high.</strong> This is not a participation trophy &mdash; it requires every team to meaningfully exceed target. The kicker at 0.75% of revenue above 120% rewards truly exceptional months without diluting the incentive for normal performance.</li>
+        <li><strong>It&rsquo;s uncapped.</strong> If aggregate hits 150%, the Manager keeps earning. This aligns Manager incentives with company growth: there is never a point where the Manager stops caring about more revenue.</li>
+      </ul>
+
+      <h3>4. Why Four Penalties?</h3>
+      <p>Managers have more penalty layers than TLs because they have more levers of control:</p>
+      <table>
+        <thead><tr><th>Penalty</th><th>What It Catches</th><th>Why It Matters</th></tr></thead>
+        <tbody>
+          <tr><td>A: Missed Connects</td><td>Aggregate SLA breaches across all teams</td><td>The Manager sets the operational cadence. If connects are being missed across teams, the process is broken at the org level.</td></tr>
+          <tr><td>B: Revenue Shortfall</td><td>Proportional miss against aggregate target</td><td>Same as TL &mdash; scales with the size of the miss.</td></tr>
+          <tr><td>C: TL Failure</td><td>How many Team Leads missed their targets</td><td>If all TLs miss, the Manager failed to coach, escalate, or reallocate. If all-but-one miss, there&rsquo;s still a systemic problem even if aggregate looks okay.</td></tr>
+          <tr><td>D: Closer Failure</td><td>% of all closers missing individual targets</td><td>If &gt;60% of closers across the org are missing targets, hiring, training, or lead quality is broken &mdash; all Manager-level decisions.</td></tr>
+        </tbody>
+      </table>
+
+      <h3>5. Design Principles</h3>
+      <table>
+        <thead><tr><th>Principle</th><th>How It Shows Up</th></tr></thead>
+        <tbody>
+          <tr><td>No negative incentive</td><td>Floor is Rs 0 &mdash; penalties can reduce to zero but never below</td></tr>
+          <tr><td>Kicker is uncapped</td><td>No ceiling on earnings above 120% &mdash; aligns with company growth</td></tr>
+          <tr><td>Penalties stack but don&rsquo;t compound</td><td>C applies to subtotal, D applies after C &mdash; worst case is additive, not multiplicative</td></tr>
+          <tr><td>Data-driven only</td><td>All metrics from CRM/dialer &mdash; no self-reporting</td></tr>
+          <tr><td>Quarterly review</td><td>Targets and rates reviewed every quarter</td></tr>
+          <tr><td>3-day dispute window</td><td>After incentive sheet is published</td></tr>
+          <tr><td>Prorated for new joiners</td><td>Managers joining mid-month get prorated targets</td></tr>
+        </tbody>
+      </table>
+
+      <h3>6. What Good Looks Like</h3>
+      <p>A Manager who consistently:</p>
+      <ul>
+        <li>Hits 110%+ aggregate revenue</li>
+        <li>Ensures all 3 input metrics are met across all teams</li>
+        <li>Keeps total missed connects below 6</li>
+        <li>Has all Team Leads at or above their individual team targets</li>
+        <li>Has fewer than 40% of closers missing individual targets</li>
+      </ul>
+      <p>&hellip;will earn full base incentive + 20% input bonus with zero penalties. At Rs 1.5Cr target and 110% achievement, that&rsquo;s approximately <strong>Rs 1,98,000/month</strong>.</p>
+      <p>Push to 140% and add the kicker: approximately <strong>Rs 3,37,500/month</strong>.</p>
+
+      <h3>7. What Bad Looks Like</h3>
+      <p>A Manager who:</p>
+      <ul>
+        <li>Hits only 72% aggregate (70&ndash;89% slab: 0.5%)</li>
+        <li>Misses input metrics (no bonus)</li>
+        <li>Has 43 missed connects across teams (-15%)</li>
+        <li>All 3 TLs miss targets (-25%)</li>
+        <li>93% of closers miss targets (-15%)</li>
+      </ul>
+      <p>&hellip;will see incentive reduced to approximately <strong>Rs 19,000/month</strong> after all penalties stack.</p>
+
+      <h3>8. Guardrails</h3>
+      <ul>
+        <li><strong>Minimum floor:</strong> Incentive can never go negative. Floor is Rs 0.</li>
+        <li><strong>Payment cycle:</strong> Incentives paid in the following month&rsquo;s salary.</li>
+        <li><strong>Session definition:</strong> A session = a scheduled, attended demo/consultation with a qualified prospect. No-shows do not count.</li>
+        <li><strong>16-hour SLA:</strong> Measured from lead assignment timestamp in CRM to first outbound call/WhatsApp/email timestamp.</li>
+        <li><strong>Closer targets:</strong> Defined separately per closer based on experience tier and territory.</li>
+        <li><strong>TL targets:</strong> Each Team Lead has a pre-set team target; the Manager is evaluated on how many TLs hit theirs.</li>
+      </ul>
+    </div>
+  </div>
+
 </div>
 
 <script>
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(function(btn) { btn.classList.remove('active'); });
+  document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); });
+  document.getElementById('tab-' + tab).classList.add('active');
+  event.target.classList.add('active');
+}
+
 function fmt(n) {
   if (n < 0) n = 0;
   var s = Math.round(n).toString();
-  var afterPoint = '';
-  if (s.indexOf('.') > 0) { afterPoint = s.substring(s.indexOf('.'), s.length); }
   s = s.replace(/\.\d+/, '');
   var lastThree = s.substring(s.length - 3);
   var otherNumbers = s.substring(0, s.length - 3);
@@ -284,10 +395,8 @@ function calc() {
   var totalClosers = parseInt(document.getElementById('totalClosers').value) || 1;
   var closersMissing = parseInt(document.getElementById('closersMissing').value) || 0;
 
-  // Step 1: Base
   var pct = target > 0 ? (revenue / target) * 100 : 0;
-  var slabRate = 0;
-  var slabLabel = '';
+  var slabRate = 0, slabLabel = '';
   if (pct < 70) { slabRate = 0; slabLabel = 'Below 70% — 0%'; }
   else if (pct < 90) { slabRate = 0.005; slabLabel = '70%–89% — 0.5%'; }
   else if (pct < 100) { slabRate = 0.0075; slabLabel = '90%–99% — 0.75%'; }
@@ -295,63 +404,47 @@ function calc() {
   else { slabRate = 0.0125; slabLabel = '120%+ — 1.25%'; }
   var base = revenue * slabRate;
 
-  // Step 2: Input Bonus
   var inputPct = 0;
   if (inputMet === 3) inputPct = 0.20;
   else if (inputMet === 2) inputPct = 0.10;
   var inputBonus = base * inputPct;
 
-  // Step 3: Kicker
   var kicker = 0;
   if (pct > 120 && target > 0) {
-    var threshold120 = target * 1.2;
-    kicker = (revenue - threshold120) * 0.0075;
+    kicker = (revenue - target * 1.2) * 0.0075;
   }
 
-  // Step 4: Penalty A
   var penAPct = 0;
   if (missed >= 26) penAPct = 0.15;
   else if (missed >= 16) penAPct = 0.10;
   else if (missed >= 6) penAPct = 0.05;
   var penA = base * penAPct;
 
-  // Step 5: Penalty B
   var penB = 0;
   if (pct < 100 && target > 0) {
     var shortfall = target - revenue;
     var shortfallPct = (shortfall / target) * 100;
-    if (shortfallPct > 0 && shortfallPct <= 10) {
-      penB = 0.5 * shortfall * slabRate;
-    } else if (shortfallPct > 10 && shortfallPct <= 30) {
-      penB = 0.75 * shortfall * slabRate;
-    }
-    // >30% means below 70% slab, base already 0
+    if (shortfallPct > 0 && shortfallPct <= 10) penB = 0.5 * shortfall * slabRate;
+    else if (shortfallPct > 10 && shortfallPct <= 30) penB = 0.75 * shortfall * slabRate;
   }
 
-  // Subtotal before C & D
   var subtotal = base + inputBonus + kicker - penA - penB;
 
-  // Step 6: Penalty C
-  var penCPct = 0;
-  var penCLabel = '0%';
-  if (tlsMissing >= totalTLs && totalTLs > 0) { penCPct = 0.25; penCLabel = '−25% (all TLs miss)'; }
-  else if (tlsMissing === totalTLs - 1 && totalTLs > 1) { penCPct = 0.10; penCLabel = '−10% (all-but-one miss)'; }
+  var penCPct = 0, penCLabel = '0%';
+  if (tlsMissing >= totalTLs && totalTLs > 0) { penCPct = 0.25; penCLabel = '-25% (all TLs miss)'; }
+  else if (tlsMissing === totalTLs - 1 && totalTLs > 1) { penCPct = 0.10; penCLabel = '-10% (all-but-one miss)'; }
   var penC = subtotal > 0 ? subtotal * penCPct : 0;
 
-  // Step 7: Penalty D
   var afterC = subtotal - penC;
   var closerMissPct = totalClosers > 0 ? (closersMissing / totalClosers) * 100 : 0;
-  var penDPct = 0;
-  var penDLabel = '0%';
-  if (closerMissPct > 80) { penDPct = 0.15; penDLabel = '−15% (>80% miss)'; }
-  else if (closerMissPct > 60) { penDPct = 0.10; penDLabel = '−10% (61-80% miss)'; }
-  else if (closerMissPct > 40) { penDPct = 0.05; penDLabel = '−5% (41-60% miss)'; }
+  var penDPct = 0, penDLabel = '0%';
+  if (closerMissPct > 80) { penDPct = 0.15; penDLabel = '-15% (>80% miss)'; }
+  else if (closerMissPct > 60) { penDPct = 0.10; penDLabel = '-10% (61-80% miss)'; }
+  else if (closerMissPct > 40) { penDPct = 0.05; penDLabel = '-5% (41-60% miss)'; }
   var penD = afterC > 0 ? afterC * penDPct : 0;
 
-  // Final
   var final_ = Math.max(0, subtotal - penC - penD);
 
-  // Render
   var h = '';
   h += row('% of Target Achieved', pct.toFixed(1) + '%', '');
   h += row('Slab Applied', slabLabel, 'highlight');
@@ -360,13 +453,13 @@ function calc() {
   h += row('Step 2: Input Bonus (' + (inputPct * 100) + '% of base)', fmt(inputBonus), inputBonus > 0 ? 'bonus' : '');
   h += row('Step 3: Overachievement Kicker', fmt(kicker), kicker > 0 ? 'kicker' : '');
   h += '<div style="height:4px"></div>';
-  h += row('Step 4: Penalty A — Missed Connects (' + missed + ')', '−' + fmt(penA), penA > 0 ? 'penalty' : '');
-  h += row('Step 5: Penalty B — Revenue Shortfall', '−' + fmt(penB), penB > 0 ? 'penalty' : '');
+  h += row('Step 4: Penalty A — Missed Connects (' + missed + ')', '-' + fmt(penA), penA > 0 ? 'penalty' : '');
+  h += row('Step 5: Penalty B — Revenue Shortfall', '-' + fmt(penB), penB > 0 ? 'penalty' : '');
   h += '<div style="height:6px"></div>';
   h += row('Subtotal before Penalty C & D', fmt(Math.max(0, subtotal)), 'highlight');
   h += '<div style="height:4px"></div>';
-  h += row('Step 6: Penalty C — TL Failure ' + penCLabel, '−' + fmt(penC), penC > 0 ? 'penalty' : '');
-  h += row('Step 7: Penalty D — Closer Failure ' + penDLabel, '−' + fmt(penD), penD > 0 ? 'penalty' : '');
+  h += row('Step 6: Penalty C — TL Failure ' + penCLabel, '-' + fmt(penC), penC > 0 ? 'penalty' : '');
+  h += row('Step 7: Penalty D — Closer Failure ' + penDLabel, '-' + fmt(penD), penD > 0 ? 'penalty' : '');
 
   var finalClass = final_ > 0 ? 'final-positive' : 'final-zero';
   h += '<div class="result-row final-row"><span class="label">FINAL PAYOUT</span><span class="value ' + finalClass + '">' + fmt(final_) + '</span></div>';
@@ -378,13 +471,10 @@ function row(label, value, cls) {
   return '<div class="result-row ' + cls + '"><span class="label">' + label + '</span><span class="value">' + value + '</span></div>';
 }
 
-// Bind events
 document.querySelectorAll('input, select').forEach(function(el) {
   el.addEventListener('input', calc);
   el.addEventListener('change', calc);
 });
-
-// Initial calc
 calc();
 </script>
 </body>

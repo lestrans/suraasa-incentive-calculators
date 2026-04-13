@@ -18,12 +18,24 @@
 
   header {
     display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
-    border-bottom: 1px solid #27272a; padding-bottom: 16px; margin-bottom: 32px; gap: 8px;
+    border-bottom: 1px solid #27272a; padding-bottom: 16px; margin-bottom: 24px; gap: 8px;
   }
   header h1 { font-size: 1.35rem; font-weight: 700; }
   header h1 span { color: #2563eb; }
-  header .nav-link { font-size: 0.85rem; color: #a1a1aa; }
-  header .nav-link:hover { color: #2563eb; }
+
+  /* Tabs */
+  .tabs {
+    display: flex; gap: 0; margin-bottom: 28px; border-bottom: 1px solid #3f3f46;
+  }
+  .tab-btn {
+    padding: 12px 24px; font-size: 0.92rem; font-weight: 600; color: #71717a;
+    background: none; border: none; border-bottom: 2px solid transparent;
+    cursor: pointer; transition: color 0.15s, border-color 0.15s;
+  }
+  .tab-btn:hover { color: #a1a1aa; }
+  .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
 
   /* Calculator Section */
   .calc-section {
@@ -69,7 +81,7 @@
   .neutral { color: #f4f4f5; }
   .penalty { color: #f87171; }
 
-  /* Plan Details */
+  /* Plan & Policy Details */
   .plan-section { margin-bottom: 36px; }
   .plan-section h2 {
     font-size: 1.2rem; font-weight: 700; margin-bottom: 20px; padding-bottom: 8px;
@@ -97,6 +109,14 @@
     padding: 16px 20px; margin: 16px 0; font-size: 0.88rem; color: #d4d4d8; line-height: 1.8;
   }
   .formula-box code { color: #60a5fa; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem; }
+
+  .policy-callout {
+    background: #1e293b; border: 1px solid #2563eb40; border-radius: 10px;
+    padding: 20px 24px; margin-bottom: 24px;
+  }
+  .policy-callout h3 { color: #60a5fa; margin-bottom: 10px; font-size: 1.05rem; }
+  .policy-callout p { color: #94a3b8; font-size: 0.9rem; line-height: 1.7; margin-bottom: 10px; }
+  .policy-callout p:last-child { margin-bottom: 0; }
 </style>
 </head>
 <body>
@@ -106,126 +126,216 @@
     <h1><span>Suraasa</span> — Team Lead Incentive Calculator</h1>
   </header>
 
-  <!-- ======================== CALCULATOR ======================== -->
-  <div class="calc-section">
-    <h2>Calculate Your Incentive</h2>
-    <div class="input-grid">
-      <div class="field">
-        <label>Team Monthly Target (Rs)</label>
-        <input type="number" id="target" value="5000000" min="0" step="100000">
-      </div>
-      <div class="field">
-        <label>Team Revenue Achieved (Rs)</label>
-        <input type="number" id="revenue" value="0" min="0" step="100000">
-      </div>
-      <div class="field">
-        <label>Input Metrics Met</label>
-        <select id="inputMetrics">
-          <option value="3">All 3 met</option>
-          <option value="2">2 of 3 met</option>
-          <option value="1">1 or none met</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Missed Connects (16-hour SLA)</label>
-        <input type="number" id="missedConnects" value="0" min="0">
-      </div>
-      <div class="field">
-        <label>Total Closers in Team</label>
-        <input type="number" id="totalClosers" value="5" min="1">
-      </div>
-      <div class="field">
-        <label>Closers Missing Individual Target</label>
-        <input type="number" id="closersMissing" value="0" min="0">
-      </div>
-    </div>
-
-    <div class="results" id="results"></div>
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('calculator')">Calculator</button>
+    <button class="tab-btn" onclick="switchTab('policy')">Incentive Policy</button>
   </div>
 
-  <!-- ======================== PLAN DETAILS ======================== -->
-  <div class="plan-section">
-    <h2>Full Incentive Plan Details</h2>
+  <!-- ======================== TAB 1: CALCULATOR ======================== -->
+  <div id="tab-calculator" class="tab-content active">
+    <div class="calc-section">
+      <h2>Calculate Your Incentive</h2>
+      <div class="input-grid">
+        <div class="field">
+          <label>Team Monthly Target (Rs)</label>
+          <input type="number" id="target" value="5000000" min="0" step="100000">
+        </div>
+        <div class="field">
+          <label>Team Revenue Achieved (Rs)</label>
+          <input type="number" id="revenue" value="0" min="0" step="100000">
+        </div>
+        <div class="field">
+          <label>Input Metrics Met</label>
+          <select id="inputMetrics">
+            <option value="3">All 3 met</option>
+            <option value="2">2 of 3 met</option>
+            <option value="1">1 or none met</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Missed Connects (16-hour SLA)</label>
+          <input type="number" id="missedConnects" value="0" min="0">
+        </div>
+        <div class="field">
+          <label>Total Closers in Team</label>
+          <input type="number" id="totalClosers" value="5" min="1">
+        </div>
+        <div class="field">
+          <label>Closers Missing Individual Target</label>
+          <input type="number" id="closersMissing" value="0" min="0">
+        </div>
+      </div>
 
-    <h3>1. Base Incentive Slabs</h3>
-    <table>
-      <thead><tr><th>Achievement Slab</th><th>Incentive Rate (% of Revenue Achieved)</th></tr></thead>
-      <tbody>
-        <tr><td>Below 70%</td><td>0%</td></tr>
-        <tr><td>70% &ndash; 89%</td><td>0.75%</td></tr>
-        <tr><td>90% &ndash; 99%</td><td>1.0%</td></tr>
-        <tr><td>100% &ndash; 119%</td><td>1.25%</td></tr>
-        <tr><td>120% and above</td><td>2.0%</td></tr>
-      </tbody>
-    </table>
+      <div class="results" id="results"></div>
+    </div>
 
-    <h3>2. Input Criteria (Monitored Daily)</h3>
-    <table>
-      <thead><tr><th>Metric</th><th>Minimum Requirement</th></tr></thead>
-      <tbody>
-        <tr><td>SDR Talk Time</td><td>150 minutes / day</td></tr>
-        <tr><td>SDR Calls</td><td>80 calls / day</td></tr>
-        <tr><td>Sessions Booked</td><td>3 / day</td></tr>
-      </tbody>
-    </table>
-    <table>
-      <thead><tr><th>Criteria Met</th><th>Bonus on Base Incentive</th></tr></thead>
-      <tbody>
-        <tr><td>All 3 met</td><td>+20%</td></tr>
-        <tr><td>2 of 3 met</td><td>+10%</td></tr>
-        <tr><td>1 or none met</td><td>+0%</td></tr>
-      </tbody>
-    </table>
+    <!-- Plan Details under calculator -->
+    <div class="plan-section">
+      <h2>How It&rsquo;s Calculated</h2>
 
-    <h3>3. Penalties</h3>
+      <h3>1. Base Incentive Slabs</h3>
+      <table>
+        <thead><tr><th>Achievement Slab</th><th>Incentive Rate (% of Revenue Achieved)</th></tr></thead>
+        <tbody>
+          <tr><td>Below 70%</td><td>0%</td></tr>
+          <tr><td>70% &ndash; 89%</td><td>0.75%</td></tr>
+          <tr><td>90% &ndash; 99%</td><td>1.0%</td></tr>
+          <tr><td>100% &ndash; 119%</td><td>1.25%</td></tr>
+          <tr><td>120% and above</td><td>2.0%</td></tr>
+        </tbody>
+      </table>
 
-    <p><strong>Penalty A &mdash; Missed 16-Hour Connect SLA</strong></p>
-    <table>
-      <thead><tr><th>Missed Connects</th><th>Deduction (% of Base Incentive)</th></tr></thead>
-      <tbody>
-        <tr><td>0 &ndash; 2</td><td>0%</td></tr>
-        <tr><td>3 &ndash; 5</td><td>-5%</td></tr>
-        <tr><td>6 &ndash; 10</td><td>-10%</td></tr>
-        <tr><td>11+</td><td>-15%</td></tr>
-      </tbody>
-    </table>
+      <h3>2. Input Criteria (Monitored Daily)</h3>
+      <table>
+        <thead><tr><th>Metric</th><th>Minimum Requirement</th></tr></thead>
+        <tbody>
+          <tr><td>SDR Talk Time</td><td>150 minutes / day</td></tr>
+          <tr><td>SDR Calls</td><td>80 calls / day</td></tr>
+          <tr><td>Sessions Booked</td><td>3 / day</td></tr>
+        </tbody>
+      </table>
+      <table>
+        <thead><tr><th>Criteria Met</th><th>Bonus on Base Incentive</th></tr></thead>
+        <tbody>
+          <tr><td>All 3 met</td><td>+20%</td></tr>
+          <tr><td>2 of 3 met</td><td>+10%</td></tr>
+          <tr><td>1 or none met</td><td>+0%</td></tr>
+        </tbody>
+      </table>
 
-    <p><strong>Penalty B &mdash; Revenue Shortfall (only if below 100% target)</strong></p>
-    <table>
-      <thead><tr><th>Shortfall Range</th><th>Penalty Multiplier</th><th>Formula</th></tr></thead>
-      <tbody>
-        <tr><td>1% &ndash; 10%</td><td>50%</td><td>50% &times; Shortfall Amount &times; Slab Rate</td></tr>
-        <tr><td>11% &ndash; 30%</td><td>75%</td><td>75% &times; Shortfall Amount &times; Slab Rate</td></tr>
-        <tr><td>Above 30%</td><td colspan="2">Base incentive is already 0% (below 70% achievement)</td></tr>
-      </tbody>
-    </table>
+      <h3>3. Penalties</h3>
 
-    <p><strong>Penalty C &mdash; Closers Missing Individual Targets</strong></p>
-    <table>
-      <thead><tr><th>Condition</th><th>Deduction (% of subtotal after A &amp; B)</th></tr></thead>
-      <tbody>
-        <tr><td>All closers miss target</td><td>-25%</td></tr>
-        <tr><td>All but 1 miss target</td><td>-10%</td></tr>
-        <tr><td>More than half miss (but not all-but-1 or all)</td><td>-5%</td></tr>
-        <tr><td>Half or fewer miss</td><td>0%</td></tr>
-      </tbody>
-    </table>
+      <p><strong>Penalty A &mdash; Missed 16-Hour Connect SLA</strong></p>
+      <table>
+        <thead><tr><th>Missed Connects</th><th>Deduction (% of Base Incentive)</th></tr></thead>
+        <tbody>
+          <tr><td>0 &ndash; 2</td><td>0%</td></tr>
+          <tr><td>3 &ndash; 5</td><td>-5%</td></tr>
+          <tr><td>6 &ndash; 10</td><td>-10%</td></tr>
+          <tr><td>11+</td><td>-15%</td></tr>
+        </tbody>
+      </table>
 
-    <h3>4. Calculation Flow</h3>
-    <div class="formula-box">
-      <strong>Step 1:</strong> <code>Base Incentive = Revenue Achieved &times; Slab Rate</code><br>
-      <strong>Step 2:</strong> <code>Input Bonus = Base Incentive &times; Input Bonus %</code><br>
-      <strong>Step 3:</strong> <code>Penalty A = Base Incentive &times; Missed-Connect Penalty %</code><br>
-      <strong>Step 4:</strong> <code>Penalty B = Shortfall Multiplier &times; Shortfall Amount &times; Slab Rate</code> (only if below 100%)<br>
-      <strong>Step 5:</strong> <code>Subtotal = Base + Input Bonus &minus; Penalty A &minus; Penalty B</code><br>
-      <strong>Step 6:</strong> <code>Penalty C = Subtotal &times; Closer Penalty %</code><br>
-      <strong>Final:</strong> <code>Payout = Max(0, Subtotal &minus; Penalty C)</code>
+      <p><strong>Penalty B &mdash; Revenue Shortfall (only if below 100% target)</strong></p>
+      <table>
+        <thead><tr><th>Shortfall Range</th><th>Penalty Multiplier</th><th>Formula</th></tr></thead>
+        <tbody>
+          <tr><td>1% &ndash; 10%</td><td>50%</td><td>50% &times; Shortfall Amount &times; Slab Rate</td></tr>
+          <tr><td>11% &ndash; 30%</td><td>75%</td><td>75% &times; Shortfall Amount &times; Slab Rate</td></tr>
+          <tr><td>Above 30%</td><td colspan="2">Base incentive is already 0% (below 70% achievement)</td></tr>
+        </tbody>
+      </table>
+
+      <p><strong>Penalty C &mdash; Closers Missing Individual Targets</strong></p>
+      <table>
+        <thead><tr><th>Condition</th><th>Deduction (% of subtotal after A &amp; B)</th></tr></thead>
+        <tbody>
+          <tr><td>All closers miss target</td><td>-25%</td></tr>
+          <tr><td>All but 1 miss target</td><td>-10%</td></tr>
+          <tr><td>More than half miss (but not all-but-1 or all)</td><td>-5%</td></tr>
+          <tr><td>Half or fewer miss</td><td>0%</td></tr>
+        </tbody>
+      </table>
+
+      <h3>4. Calculation Flow</h3>
+      <div class="formula-box">
+        <strong>Step 1:</strong> <code>Base Incentive = Revenue Achieved &times; Slab Rate</code><br>
+        <strong>Step 2:</strong> <code>Input Bonus = Base Incentive &times; Input Bonus %</code><br>
+        <strong>Step 3:</strong> <code>Penalty A = Base Incentive &times; Missed-Connect Penalty %</code><br>
+        <strong>Step 4:</strong> <code>Penalty B = Shortfall Multiplier &times; Shortfall Amount &times; Slab Rate</code> (only if below 100%)<br>
+        <strong>Step 5:</strong> <code>Subtotal = Base + Input Bonus &minus; Penalty A &minus; Penalty B</code><br>
+        <strong>Step 6:</strong> <code>Penalty C = Subtotal &times; Closer Penalty %</code><br>
+        <strong>Final:</strong> <code>Payout = Max(0, Subtotal &minus; Penalty C)</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================== TAB 2: POLICY ======================== -->
+  <div id="tab-policy" class="tab-content">
+    <div class="plan-section">
+      <h2>Incentive Policy Document</h2>
+
+      <div class="policy-callout">
+        <h3>Why This Policy?</h3>
+        <p>This incentive plan is designed to drive the right behaviors at the Team Lead level &mdash; not just revenue, but the daily actions that consistently produce revenue over time.</p>
+        <p>A Team Lead&rsquo;s job is not to close deals personally. It is to ensure their team&rsquo;s SDRs are making enough calls, booking enough sessions, and connecting with prospects fast enough &mdash; while their closers are consistently hitting individual targets. Revenue is the outcome; the inputs are what a TL can actually control.</p>
+        <p>The plan rewards both dimensions: output (revenue achieved) and input (SDR activity and operational discipline). It also penalizes gaps in leadership &mdash; missed prospect connections, revenue shortfalls, and systemic closer underperformance &mdash; because these are the problems a Team Lead is specifically hired to prevent.</p>
+      </div>
+
+      <h3>1. Philosophy: Output + Input</h3>
+      <p>Most incentive plans only pay on revenue. This plan intentionally splits the incentive into <strong>output criteria (60% weight)</strong> and <strong>input criteria (20% weight)</strong>, with the remaining 20% determined by penalty avoidance.</p>
+      <ul>
+        <li><strong>Output (Revenue)</strong> &mdash; The team&rsquo;s total revenue against target. This is what the business needs. Slab-based rates ensure that hitting 120%+ is disproportionately rewarded (2.0% vs 1.25% at 100%), creating a strong pull toward overachievement.</li>
+        <li><strong>Input (SDR Activity)</strong> &mdash; Talk time, call volume, and sessions booked. These are leading indicators. A team that hits these daily will almost certainly hit revenue targets. The +20% bonus rewards TLs who manage the process, not just the scoreboard.</li>
+      </ul>
+
+      <h3>2. Why Slab-Based Rates?</h3>
+      <p>Flat commission rates create no urgency to push past target. With slabs, a TL earning 1.25% at 105% has a clear financial reason to push to 120% where the rate jumps to 2.0%. The jump from 1.25% to 2.0% at the 120% threshold is the single biggest accelerator in the plan.</p>
+      <p>Below 70%, the incentive is zero. This sets a minimum performance floor &mdash; the company cannot subsidize teams that deliver less than 70% of their target.</p>
+
+      <h3>3. Why Penalties?</h3>
+      <p>Penalties exist because a Team Lead&rsquo;s job includes preventing specific failures:</p>
+      <ul>
+        <li><strong>Penalty A (Missed 16-hour Connect)</strong> &mdash; Speed-to-lead is one of the highest-leverage activities in sales. Research consistently shows that contacting a prospect within the first hour increases conversion rates by 7x compared to contacting them after 24 hours. The 16-hour SLA is generous. Missing it repeatedly signals a process breakdown that the TL is responsible for fixing.</li>
+        <li><strong>Penalty B (Revenue Shortfall)</strong> &mdash; A proportional deduction that scales with the size of the miss. This prevents a scenario where a TL at 92% of target earns nearly the same as one at 99%. The closer you are, the less you lose.</li>
+        <li><strong>Penalty C (Closers Missing Targets)</strong> &mdash; If all 5 closers miss their individual targets, that&rsquo;s not 5 individual problems &mdash; it&rsquo;s a coaching and management problem. The -25% penalty for all closers missing is the strongest signal in the plan: your job is to develop your people, not just inherit results.</li>
+      </ul>
+
+      <h3>4. Design Principles</h3>
+      <table>
+        <thead><tr><th>Principle</th><th>How It Shows Up</th></tr></thead>
+        <tbody>
+          <tr><td>No negative incentive</td><td>Floor is Rs 0 &mdash; penalties can reduce to zero but never below</td></tr>
+          <tr><td>No upper cap</td><td>At 120%+ slab, there is no ceiling &mdash; the more you sell, the more you earn</td></tr>
+          <tr><td>Data-driven only</td><td>All metrics come from CRM/dialer &mdash; no self-reporting, no disputes about numbers</td></tr>
+          <tr><td>Quarterly review</td><td>Targets and rates are reviewed every quarter to match business growth</td></tr>
+          <tr><td>3-day dispute window</td><td>After incentive sheet is published, 3 working days to raise disputes</td></tr>
+          <tr><td>Prorated for new joiners</td><td>TLs joining mid-month get prorated targets and incentives</td></tr>
+        </tbody>
+      </table>
+
+      <h3>5. What Good Looks Like</h3>
+      <p>A Team Lead who consistently:</p>
+      <ul>
+        <li>Hits 100%+ of team revenue target</li>
+        <li>Ensures SDR talk time, calls, and sessions are all at or above minimum daily thresholds</li>
+        <li>Keeps missed connects below 3 per month</li>
+        <li>Has no more than 1&ndash;2 closers missing individual targets</li>
+      </ul>
+      <p>&hellip;will earn their full base incentive + 20% input bonus with zero penalties. At Rs 50L target and 110% achievement, that&rsquo;s approximately <strong>Rs 82,500/month</strong> in incentive.</p>
+
+      <h3>6. What Bad Looks Like</h3>
+      <p>A Team Lead who:</p>
+      <ul>
+        <li>Hits only 76% of target (70&ndash;89% slab: 0.75%)</li>
+        <li>Misses input metrics (no bonus)</li>
+        <li>Has 12+ missed connects (-15% penalty)</li>
+        <li>All 5 closers miss individual targets (-25% penalty)</li>
+      </ul>
+      <p>&hellip;will earn a heavily reduced incentive. At Rs 50L target and 76% achievement, that could be as low as <strong>Rs 19,000/month</strong> after all penalties stack.</p>
+
+      <h3>7. Guardrails</h3>
+      <ul>
+        <li><strong>Minimum floor:</strong> Incentive can never go negative. Floor is Rs 0.</li>
+        <li><strong>Payment cycle:</strong> Incentives paid in the following month&rsquo;s salary.</li>
+        <li><strong>Session definition:</strong> A session = a scheduled, attended demo/consultation with a qualified prospect. No-shows do not count.</li>
+        <li><strong>16-hour SLA:</strong> Measured from lead assignment timestamp in CRM to first outbound call/WhatsApp/email timestamp.</li>
+        <li><strong>Closer targets:</strong> Defined separately per closer based on experience tier and territory.</li>
+      </ul>
     </div>
   </div>
 
 </div>
 
 <script>
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(function(btn) { btn.classList.remove('active'); });
+  document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); });
+  document.getElementById('tab-' + tab).classList.add('active');
+  event.target.classList.add('active');
+}
+
 function formatINR(num) {
   if (num < 0) return '-' + formatINR(-num);
   num = Math.round(num);
@@ -266,24 +376,20 @@ function calculate() {
   var totalClosers = Math.max(1, Math.floor(Number(document.getElementById('totalClosers').value) || 1));
   var closersMissing = Math.max(0, Math.min(totalClosers, Math.floor(Number(document.getElementById('closersMissing').value) || 0)));
 
-  // Step 1: Base
   var pct = target > 0 ? (revenue / target) * 100 : 0;
   var slabRate = getSlabRate(pct);
   var slabLabel = getSlabLabel(pct);
   var baseIncentive = revenue * slabRate;
 
-  // Step 2: Input Bonus
   var inputBonusPct = inputMetrics === 3 ? 0.20 : (inputMetrics === 2 ? 0.10 : 0);
   var inputBonus = baseIncentive * inputBonusPct;
 
-  // Step 3: Penalty A
   var penARate = 0;
   if (missedConnects >= 11) penARate = 0.15;
   else if (missedConnects >= 6) penARate = 0.10;
   else if (missedConnects >= 3) penARate = 0.05;
   var penaltyA = baseIncentive * penARate;
 
-  // Step 4: Penalty B
   var penaltyB = 0;
   if (pct < 100 && target > 0 && pct >= 70) {
     var shortfall = target - revenue;
@@ -295,20 +401,16 @@ function calculate() {
     }
   }
 
-  // Step 5: Subtotal before Penalty C
   var subtotal = baseIncentive + inputBonus - penaltyA - penaltyB;
 
-  // Step 6: Penalty C
   var penCRate = 0;
   if (closersMissing === totalClosers) penCRate = 0.25;
   else if (closersMissing === totalClosers - 1) penCRate = 0.10;
   else if (closersMissing > totalClosers / 2) penCRate = 0.05;
   var penaltyC = subtotal > 0 ? subtotal * penCRate : 0;
 
-  // Final
   var finalPayout = Math.max(0, subtotal - penaltyC);
 
-  // Render
   var html = '<h3>Breakdown</h3>';
   function row(label, value, cls) {
     cls = cls || 'neutral';
@@ -330,14 +432,11 @@ function calculate() {
   document.getElementById('results').innerHTML = html;
 }
 
-// Bind listeners
 var ids = ['target', 'revenue', 'inputMetrics', 'missedConnects', 'totalClosers', 'closersMissing'];
 ids.forEach(function(id) {
   document.getElementById(id).addEventListener('input', calculate);
   document.getElementById(id).addEventListener('change', calculate);
 });
-
-// Initial
 calculate();
 </script>
 </body>
