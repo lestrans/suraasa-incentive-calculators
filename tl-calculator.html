@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team Lead Incentive Calculator — Suraasa</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: #18181b; color: #f4f4f5; line-height: 1.6;
+    padding: 0; margin: 0;
+  }
+  a { color: #2563eb; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .container { max-width: 860px; margin: 0 auto; padding: 24px 16px 64px; }
+
+  header {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid #27272a; padding-bottom: 16px; margin-bottom: 32px; gap: 8px;
+  }
+  header h1 { font-size: 1.35rem; font-weight: 700; }
+  header h1 span { color: #2563eb; }
+  header .nav-link { font-size: 0.85rem; color: #a1a1aa; }
+  header .nav-link:hover { color: #2563eb; }
+
+  /* Calculator Section */
+  .calc-section {
+    background: #1f1f23; border: 1px solid #27272a; border-radius: 12px;
+    padding: 28px 24px; margin-bottom: 40px;
+  }
+  .calc-section h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: 20px; color: #e4e4e7; }
+
+  .input-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px 24px; margin-bottom: 24px;
+  }
+  @media (max-width: 600px) { .input-grid { grid-template-columns: 1fr; } }
+
+  .field label {
+    display: block; font-size: 0.8rem; color: #a1a1aa; margin-bottom: 4px; font-weight: 500;
+  }
+  .field input, .field select {
+    width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #3f3f46;
+    background: #27272a; color: #f4f4f5; font-size: 0.95rem; outline: none;
+    transition: border-color 0.15s;
+  }
+  .field input:focus, .field select:focus { border-color: #2563eb; }
+  .field select { cursor: pointer; }
+
+  /* Results */
+  .results {
+    background: #27272a; border-radius: 10px; padding: 20px 24px;
+  }
+  .results h3 { font-size: 0.95rem; font-weight: 600; color: #a1a1aa; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 7px 0; font-size: 0.9rem; border-bottom: 1px solid #3f3f46;
+  }
+  .row:last-child { border-bottom: none; }
+  .row .label { color: #d4d4d8; }
+  .row .value { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .row.highlight { padding: 12px 0; margin-top: 6px; border-bottom: none; }
+  .row.highlight .label { font-size: 1rem; font-weight: 700; color: #f4f4f5; }
+  .row.highlight .value { font-size: 1.15rem; }
+  .positive { color: #22c55e; }
+  .negative { color: #ef4444; }
+  .zero { color: #ef4444; }
+  .neutral { color: #f4f4f5; }
+  .penalty { color: #f87171; }
+
+  /* Plan Details */
+  .plan-section { margin-bottom: 36px; }
+  .plan-section h2 {
+    font-size: 1.2rem; font-weight: 700; margin-bottom: 20px; padding-bottom: 8px;
+    border-bottom: 2px solid #2563eb; display: inline-block;
+  }
+  .plan-section h3 {
+    font-size: 1rem; font-weight: 600; color: #e4e4e7; margin: 20px 0 10px;
+  }
+  .plan-section p, .plan-section li {
+    font-size: 0.9rem; color: #a1a1aa; line-height: 1.7;
+  }
+  .plan-section ul { padding-left: 20px; margin-bottom: 12px; }
+  .plan-section li { margin-bottom: 4px; }
+
+  table {
+    width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.88rem;
+  }
+  th, td { padding: 10px 14px; text-align: left; border: 1px solid #3f3f46; }
+  th { background: #27272a; color: #e4e4e7; font-weight: 600; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.03em; }
+  td { color: #d4d4d8; }
+  tr:nth-child(even) td { background: #1f1f23; }
+
+  .formula-box {
+    background: #27272a; border-left: 3px solid #2563eb; border-radius: 6px;
+    padding: 16px 20px; margin: 16px 0; font-size: 0.88rem; color: #d4d4d8; line-height: 1.8;
+  }
+  .formula-box code { color: #60a5fa; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1><span>Suraasa</span> — Team Lead Incentive Calculator</h1>
+    <a class="nav-link" href="manager-calculator.html">Manager Calculator &rarr;</a>
+  </header>
+
+  <!-- ======================== CALCULATOR ======================== -->
+  <div class="calc-section">
+    <h2>Calculate Your Incentive</h2>
+    <div class="input-grid">
+      <div class="field">
+        <label>Team Monthly Target (Rs)</label>
+        <input type="number" id="target" value="5000000" min="0" step="100000">
+      </div>
+      <div class="field">
+        <label>Team Revenue Achieved (Rs)</label>
+        <input type="number" id="revenue" value="0" min="0" step="100000">
+      </div>
+      <div class="field">
+        <label>Input Metrics Met</label>
+        <select id="inputMetrics">
+          <option value="3">All 3 met</option>
+          <option value="2">2 of 3 met</option>
+          <option value="1">1 or none met</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Missed Connects (16-hour SLA)</label>
+        <input type="number" id="missedConnects" value="0" min="0">
+      </div>
+      <div class="field">
+        <label>Total Closers in Team</label>
+        <input type="number" id="totalClosers" value="5" min="1">
+      </div>
+      <div class="field">
+        <label>Closers Missing Individual Target</label>
+        <input type="number" id="closersMissing" value="0" min="0">
+      </div>
+    </div>
+
+    <div class="results" id="results"></div>
+  </div>
+
+  <!-- ======================== PLAN DETAILS ======================== -->
+  <div class="plan-section">
+    <h2>Full Incentive Plan Details</h2>
+
+    <h3>1. Base Incentive Slabs</h3>
+    <table>
+      <thead><tr><th>Achievement Slab</th><th>Incentive Rate (% of Revenue Achieved)</th></tr></thead>
+      <tbody>
+        <tr><td>Below 70%</td><td>0%</td></tr>
+        <tr><td>70% &ndash; 89%</td><td>0.75%</td></tr>
+        <tr><td>90% &ndash; 99%</td><td>1.0%</td></tr>
+        <tr><td>100% &ndash; 119%</td><td>1.25%</td></tr>
+        <tr><td>120% and above</td><td>2.0%</td></tr>
+      </tbody>
+    </table>
+
+    <h3>2. Input Criteria (Monitored Daily)</h3>
+    <table>
+      <thead><tr><th>Metric</th><th>Minimum Requirement</th></tr></thead>
+      <tbody>
+        <tr><td>SDR Talk Time</td><td>150 minutes / day</td></tr>
+        <tr><td>SDR Calls</td><td>80 calls / day</td></tr>
+        <tr><td>Sessions Booked</td><td>3 / day</td></tr>
+      </tbody>
+    </table>
+    <table>
+      <thead><tr><th>Criteria Met</th><th>Bonus on Base Incentive</th></tr></thead>
+      <tbody>
+        <tr><td>All 3 met</td><td>+20%</td></tr>
+        <tr><td>2 of 3 met</td><td>+10%</td></tr>
+        <tr><td>1 or none met</td><td>+0%</td></tr>
+      </tbody>
+    </table>
+
+    <h3>3. Penalties</h3>
+
+    <p><strong>Penalty A &mdash; Missed 16-Hour Connect SLA</strong></p>
+    <table>
+      <thead><tr><th>Missed Connects</th><th>Deduction (% of Base Incentive)</th></tr></thead>
+      <tbody>
+        <tr><td>0 &ndash; 2</td><td>0%</td></tr>
+        <tr><td>3 &ndash; 5</td><td>-5%</td></tr>
+        <tr><td>6 &ndash; 10</td><td>-10%</td></tr>
+        <tr><td>11+</td><td>-15%</td></tr>
+      </tbody>
+    </table>
+
+    <p><strong>Penalty B &mdash; Revenue Shortfall (only if below 100% target)</strong></p>
+    <table>
+      <thead><tr><th>Shortfall Range</th><th>Penalty Multiplier</th><th>Formula</th></tr></thead>
+      <tbody>
+        <tr><td>1% &ndash; 10%</td><td>50%</td><td>50% &times; Shortfall Amount &times; Slab Rate</td></tr>
+        <tr><td>11% &ndash; 30%</td><td>75%</td><td>75% &times; Shortfall Amount &times; Slab Rate</td></tr>
+        <tr><td>Above 30%</td><td colspan="2">Base incentive is already 0% (below 70% achievement)</td></tr>
+      </tbody>
+    </table>
+
+    <p><strong>Penalty C &mdash; Closers Missing Individual Targets</strong></p>
+    <table>
+      <thead><tr><th>Condition</th><th>Deduction (% of subtotal after A &amp; B)</th></tr></thead>
+      <tbody>
+        <tr><td>All closers miss target</td><td>-25%</td></tr>
+        <tr><td>All but 1 miss target</td><td>-10%</td></tr>
+        <tr><td>More than half miss (but not all-but-1 or all)</td><td>-5%</td></tr>
+        <tr><td>Half or fewer miss</td><td>0%</td></tr>
+      </tbody>
+    </table>
+
+    <h3>4. Calculation Flow</h3>
+    <div class="formula-box">
+      <strong>Step 1:</strong> <code>Base Incentive = Revenue Achieved &times; Slab Rate</code><br>
+      <strong>Step 2:</strong> <code>Input Bonus = Base Incentive &times; Input Bonus %</code><br>
+      <strong>Step 3:</strong> <code>Penalty A = Base Incentive &times; Missed-Connect Penalty %</code><br>
+      <strong>Step 4:</strong> <code>Penalty B = Shortfall Multiplier &times; Shortfall Amount &times; Slab Rate</code> (only if below 100%)<br>
+      <strong>Step 5:</strong> <code>Subtotal = Base + Input Bonus &minus; Penalty A &minus; Penalty B</code><br>
+      <strong>Step 6:</strong> <code>Penalty C = Subtotal &times; Closer Penalty %</code><br>
+      <strong>Final:</strong> <code>Payout = Max(0, Subtotal &minus; Penalty C)</code>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function formatINR(num) {
+  if (num < 0) return '-' + formatINR(-num);
+  num = Math.round(num);
+  var s = num.toString();
+  if (s.length <= 3) return 'Rs ' + s;
+  var last3 = s.slice(-3);
+  var rest = s.slice(0, -3);
+  var formatted = '';
+  while (rest.length > 2) {
+    formatted = ',' + rest.slice(-2) + formatted;
+    rest = rest.slice(0, -2);
+  }
+  formatted = rest + formatted + ',' + last3;
+  return 'Rs ' + formatted;
+}
+
+function getSlabRate(pct) {
+  if (pct < 70) return 0;
+  if (pct < 90) return 0.0075;
+  if (pct < 100) return 0.01;
+  if (pct < 120) return 0.0125;
+  return 0.02;
+}
+
+function getSlabLabel(pct) {
+  if (pct < 70) return '0% (Below 70%)';
+  if (pct < 90) return '0.75% (70%\u201389%)';
+  if (pct < 100) return '1.0% (90%\u201399%)';
+  if (pct < 120) return '1.25% (100%\u2013119%)';
+  return '2.0% (120%+)';
+}
+
+function calculate() {
+  var target = Math.max(0, Number(document.getElementById('target').value) || 0);
+  var revenue = Math.max(0, Number(document.getElementById('revenue').value) || 0);
+  var inputMetrics = Number(document.getElementById('inputMetrics').value);
+  var missedConnects = Math.max(0, Math.floor(Number(document.getElementById('missedConnects').value) || 0));
+  var totalClosers = Math.max(1, Math.floor(Number(document.getElementById('totalClosers').value) || 1));
+  var closersMissing = Math.max(0, Math.min(totalClosers, Math.floor(Number(document.getElementById('closersMissing').value) || 0)));
+
+  // Step 1: Base
+  var pct = target > 0 ? (revenue / target) * 100 : 0;
+  var slabRate = getSlabRate(pct);
+  var slabLabel = getSlabLabel(pct);
+  var baseIncentive = revenue * slabRate;
+
+  // Step 2: Input Bonus
+  var inputBonusPct = inputMetrics === 3 ? 0.20 : (inputMetrics === 2 ? 0.10 : 0);
+  var inputBonus = baseIncentive * inputBonusPct;
+
+  // Step 3: Penalty A
+  var penARate = 0;
+  if (missedConnects >= 11) penARate = 0.15;
+  else if (missedConnects >= 6) penARate = 0.10;
+  else if (missedConnects >= 3) penARate = 0.05;
+  var penaltyA = baseIncentive * penARate;
+
+  // Step 4: Penalty B
+  var penaltyB = 0;
+  if (pct < 100 && target > 0 && pct >= 70) {
+    var shortfall = target - revenue;
+    var shortfallPct = (shortfall / target) * 100;
+    if (shortfallPct > 0 && shortfallPct <= 10) {
+      penaltyB = 0.50 * shortfall * slabRate;
+    } else if (shortfallPct > 10 && shortfallPct <= 30) {
+      penaltyB = 0.75 * shortfall * slabRate;
+    }
+  }
+
+  // Step 5: Subtotal before Penalty C
+  var subtotal = baseIncentive + inputBonus - penaltyA - penaltyB;
+
+  // Step 6: Penalty C
+  var penCRate = 0;
+  if (closersMissing === totalClosers) penCRate = 0.25;
+  else if (closersMissing === totalClosers - 1) penCRate = 0.10;
+  else if (closersMissing > totalClosers / 2) penCRate = 0.05;
+  var penaltyC = subtotal > 0 ? subtotal * penCRate : 0;
+
+  // Final
+  var finalPayout = Math.max(0, subtotal - penaltyC);
+
+  // Render
+  var html = '<h3>Breakdown</h3>';
+  function row(label, value, cls) {
+    cls = cls || 'neutral';
+    html += '<div class="row"><span class="label">' + label + '</span><span class="value ' + cls + '">' + value + '</span></div>';
+  }
+
+  row('% of Target Achieved', pct.toFixed(1) + '%');
+  row('Slab Applied', slabLabel);
+  row('Base Incentive (Step 1)', formatINR(baseIncentive));
+  row('Input Bonus (Step 2, +' + (inputBonusPct * 100).toFixed(0) + '%)', inputBonus > 0 ? '+' + formatINR(inputBonus) : formatINR(0), inputBonus > 0 ? 'positive' : 'neutral');
+  row('Penalty A: Missed Connects (' + missedConnects + ', -' + (penARate * 100).toFixed(0) + '%)', penaltyA > 0 ? '-' + formatINR(penaltyA) : formatINR(0), penaltyA > 0 ? 'penalty' : 'neutral');
+  row('Penalty B: Revenue Shortfall', penaltyB > 0 ? '-' + formatINR(penaltyB) : formatINR(0), penaltyB > 0 ? 'penalty' : 'neutral');
+  row('Subtotal before Penalty C', formatINR(Math.max(0, subtotal)));
+  row('Penalty C: Closers Missing (' + closersMissing + '/' + totalClosers + ', -' + (penCRate * 100).toFixed(0) + '%)', penaltyC > 0 ? '-' + formatINR(penaltyC) : formatINR(0), penaltyC > 0 ? 'penalty' : 'neutral');
+
+  var finalClass = finalPayout > 0 ? 'positive' : 'zero';
+  html += '<div class="row highlight"><span class="label">FINAL PAYOUT</span><span class="value ' + finalClass + '">' + formatINR(finalPayout) + '</span></div>';
+
+  document.getElementById('results').innerHTML = html;
+}
+
+// Bind listeners
+var ids = ['target', 'revenue', 'inputMetrics', 'missedConnects', 'totalClosers', 'closersMissing'];
+ids.forEach(function(id) {
+  document.getElementById(id).addEventListener('input', calculate);
+  document.getElementById(id).addEventListener('change', calculate);
+});
+
+// Initial
+calculate();
+</script>
+</body>
+</html>
